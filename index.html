@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121a2b">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>マルバツクイズ｜お金のきほん</title>
+<style>
+  :root {
+    --paper:      #e9ecf2;
+    --paper-edge: #dde2ec;
+    --card:       #ffffff;
+    --ink:        #121a2b;
+    --ink-soft:   #4a566e;
+    --ink-faint:  #7c8699;
+    --line:       #c9d0dd;
+    --maru:       #cf4437;
+    --batsu:      #2b4b96;
+    --gold:       #a9822f;
+    --shadow:     0 1px 2px rgba(18,26,43,.07), 0 18px 40px -18px rgba(18,26,43,.30);
+    --serif: "Hiragino Mincho ProN","HiraMinProN-W3","Yu Mincho","YuMincho","MS PMincho",serif;
+    --sans:  "Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic","Meiryo",system-ui,sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:      #0b1120;
+      --paper-edge: #070c17;
+      --card:       #151d30;
+      --ink:        #e9edf6;
+      --ink-soft:   #a3aec5;
+      --ink-faint:  #6f7c96;
+      --line:       #2a3550;
+      --maru:       #f2705f;
+      --batsu:      #7f9dea;
+      --gold:       #d5b263;
+      --shadow:     0 1px 2px rgba(0,0,0,.45), 0 22px 48px -20px rgba(0,0,0,.75);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #0b1120;
+    --paper-edge: #070c17;
+    --card:       #151d30;
+    --ink:        #e9edf6;
+    --ink-soft:   #a3aec5;
+    --ink-faint:  #6f7c96;
+    --line:       #2a3550;
+    --maru:       #f2705f;
+    --batsu:      #7f9dea;
+    --gold:       #d5b263;
+    --shadow:     0 1px 2px rgba(0,0,0,.45), 0 22px 48px -20px rgba(0,0,0,.75);
+  }
+  :root[data-theme="light"] {
+    --paper:      #e9ecf2;
+    --paper-edge: #dde2ec;
+    --card:       #ffffff;
+    --ink:        #121a2b;
+    --ink-soft:   #4a566e;
+    --ink-faint:  #7c8699;
+    --line:       #c9d0dd;
+    --maru:       #cf4437;
+    --batsu:      #2b4b96;
+    --gold:       #a9822f;
+    --shadow:     0 1px 2px rgba(18,26,43,.07), 0 18px 40px -18px rgba(18,26,43,.30);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    padding: clamp(1rem, 4vw, 3rem) clamp(1rem, 4vw, 2rem);
+    display: flex;
+    justify-content: center;
+    background: radial-gradient(120% 90% at 50% 0%, var(--paper) 0%, var(--paper-edge) 100%);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell {
+    width: 100%;
+    max-width: 44rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1rem, 3vw, 1.75rem);
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .masthead__title {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+  }
+  .masthead__count {
+    margin: 0;
+    font-size: .8125rem;
+    letter-spacing: .16em;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* ---------- card ---------- */
+  .card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--ink);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+    padding: clamp(1.6rem, 5vw, 3rem);
+    overflow: hidden;
+  }
+  .card[hidden] { display: none; }
+
+  .enter { animation: rise .42s cubic-bezier(.2,.7,.3,1) both; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ---------- question ---------- */
+  .qhead {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: clamp(1rem, 3vw, 1.5rem);
+  }
+  .qhead__no {
+    font-family: var(--serif);
+    font-size: .9375rem;
+    letter-spacing: .22em;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+  .qhead__rule {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .qtext {
+    margin: 0;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.4rem, 5vw, 2.15rem);
+    line-height: 1.6;
+    letter-spacing: .02em;
+    text-wrap: balance;
+  }
+
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(.85rem, 3vw, 1.5rem);
+    margin-top: clamp(1.75rem, 5vw, 2.75rem);
+  }
+
+  .choice {
+    appearance: none;
+    -webkit-appearance: none;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1 / .82;
+    padding: 0;
+    background: transparent;
+    border: 1.5px solid var(--line);
+    border-radius: 3px;
+    color: inherit;
+    cursor: pointer;
+    transition: border-color .18s ease, background-color .18s ease, transform .18s ease;
+  }
+  .choice svg { width: 46%; height: auto; }
+  .choice:hover, .choice:focus-visible { transform: translateY(-3px); }
+  .choice:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .choice:active { transform: translateY(0); }
+
+  .choice--maru:hover, .choice--maru:focus-visible {
+    border-color: var(--maru);
+    background: color-mix(in srgb, var(--maru) 8%, transparent);
+  }
+  .choice--batsu:hover, .choice--batsu:focus-visible {
+    border-color: var(--batsu);
+    background: color-mix(in srgb, var(--batsu) 8%, transparent);
+  }
+  .choice--maru  svg { stroke: var(--maru); }
+  .choice--batsu svg { stroke: var(--batsu); }
+
+  .hint {
+    margin: 1.25rem 0 0;
+    font-size: .8125rem;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .hint kbd {
+    font-family: var(--sans);
+    font-size: .9em;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    padding: .05em .4em;
+  }
+
+  /* ---------- answer ---------- */
+  .mark-wrap {
+    display: grid;
+    place-items: center;
+    padding: clamp(.75rem, 2vw, 1.25rem) 0 clamp(1rem, 3vw, 1.5rem);
+  }
+  .mark { width: clamp(120px, 34vw, 180px); height: auto; }
+  .mark[hidden] { display: none; }
+  .mark path, .mark line, .mark circle {
+    fill: none;
+    stroke-width: 11;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: draw .55s cubic-bezier(.35,.75,.4,1) forwards;
+  }
+  .mark .s2 { animation-delay: .3s; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  .mark--maru  * { stroke: var(--maru); }
+  .mark--batsu * { stroke: var(--batsu); }
+
+  .answer-label {
+    margin: 0 0 clamp(1.25rem, 3vw, 1.75rem);
+    text-align: center;
+    font-family: var(--serif);
+    font-size: clamp(1.25rem, 3.6vw, 1.6rem);
+    font-weight: 600;
+    letter-spacing: .08em;
+  }
+  .answer-label--correct { color: var(--maru); }
+  .answer-label--wrong   { color: var(--batsu); }
+
+  .commentary {
+    border-top: 1px solid var(--line);
+    padding-top: clamp(1.25rem, 3vw, 1.6rem);
+  }
+  .commentary__label {
+    margin: 0 0 .5rem;
+    font-size: .75rem;
+    letter-spacing: .24em;
+    color: var(--ink-faint);
+  }
+  .commentary__body {
+    margin: 0;
+    font-size: 1.0625rem;
+    color: var(--ink-soft);
+  }
+  .commentary__body strong { color: var(--ink); font-weight: 600; }
+
+  .card__foot {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-top: clamp(1.5rem, 4vw, 2.25rem);
+  }
+
+  /* ---------- result ---------- */
+  .result__lead {
+    margin: 0;
+    text-align: center;
+    font-size: .75rem;
+    letter-spacing: .3em;
+    text-indent: .3em;
+    color: var(--ink-faint);
+  }
+  .score {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: .1em;
+    font-family: var(--serif);
+    color: var(--maru);
+    padding: clamp(.5rem, 2vw, 1rem) 0 .25rem;
+  }
+  .score__num {
+    font-size: clamp(4.5rem, 21vw, 7.5rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .score__unit { font-size: clamp(1.25rem, 4vw, 1.75rem); font-weight: 600; }
+
+  .score__max {
+    margin: 0;
+    text-align: center;
+    font-size: .875rem;
+    letter-spacing: .12em;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .result__count {
+    margin: clamp(1.25rem, 3vw, 1.75rem) 0 0;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: clamp(1.1rem, 3.2vw, 1.375rem);
+    font-weight: 600;
+    letter-spacing: .06em;
+  }
+  .result__comment {
+    margin: .75rem auto 0;
+    max-width: 30rem;
+    text-align: center;
+    color: var(--ink-soft);
+  }
+
+  .next {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    font-size: .9375rem;
+    letter-spacing: .1em;
+    padding: .7rem 1.5rem;
+    background: var(--ink);
+    color: var(--card);
+    border: 1px solid var(--ink);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .next:hover { transform: translateY(-2px); }
+  .next:focus-visible { outline: 2px solid var(--maru); outline-offset: 3px; }
+  .next[disabled] { opacity: .35; cursor: not-allowed; transform: none; }
+
+  .next--ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border-color: var(--line);
+  }
+  .next--ghost:hover { color: var(--ink); border-color: var(--ink); }
+
+  /* ---------- 満点のクラッカー ---------- */
+  #confetti {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+  }
+  #confetti[hidden] { display: none; }
+
+  @media (max-width: 380px) {
+    .choices { grid-template-columns: 1fr; }
+    .choice { aspect-ratio: 1 / .5; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+    .mark path, .mark line, .mark circle { stroke-dashoffset: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="masthead">
+    <h1 class="masthead__title">お金のきほん マルバツクイズ</h1>
+    <p class="masthead__count"><span id="count-now">1</span> / <span id="count-all">1</span></p>
+  </header>
+
+  <!-- 出題 -->
+  <section class="card enter" id="card-question">
+    <div class="qhead">
+      <span class="qhead__no" id="q-no">第 一 問</span>
+      <span class="qhead__rule"></span>
+    </div>
+    <p class="qtext" id="q-text"></p>
+
+    <div class="choices">
+      <button class="choice choice--maru" id="btn-maru" aria-label="マル（正しい）">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="48" fill="none" stroke-width="9" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="choice choice--batsu" id="btn-batsu" aria-label="バツ（誤り）">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <line x1="20" y1="20" x2="100" y2="100" stroke-width="9" stroke-linecap="round"/>
+          <line x1="100" y1="20" x2="20" y2="100" stroke-width="9" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <p class="hint"><kbd>←</kbd> でマル、<kbd>→</kbd> でバツも選べます</p>
+  </section>
+
+  <!-- 解答 -->
+  <section class="card" id="card-answer" hidden>
+    <div class="mark-wrap">
+      <svg class="mark mark--maru" id="mark-maru" viewBox="0 0 200 200" role="img" aria-label="マル">
+        <circle cx="100" cy="100" r="76" pathLength="100" transform="rotate(-105 100 100)"/>
+      </svg>
+      <svg class="mark mark--batsu" id="mark-batsu" viewBox="0 0 200 200" role="img" aria-label="バツ" hidden>
+        <line class="s1" x1="32" y1="30" x2="168" y2="170" pathLength="100"/>
+        <line class="s2" x1="168" y1="32" x2="30" y2="168" pathLength="100"/>
+      </svg>
+    </div>
+
+    <p class="answer-label" id="answer-label"></p>
+
+    <div class="commentary">
+      <p class="commentary__label">解 説</p>
+      <p class="commentary__body" id="commentary"></p>
+    </div>
+
+    <div class="card__foot">
+      <button class="next" id="btn-next">次の問題へ →</button>
+    </div>
+  </section>
+
+  <!-- 結果 -->
+  <section class="card" id="card-result" hidden>
+    <p class="result__lead">あなたの得点</p>
+
+    <p class="score">
+      <span class="score__num" id="score-num">0</span><span class="score__unit">点</span>
+    </p>
+    <p class="score__max"><span id="score-max">100</span>点満点</p>
+
+    <p class="result__count">
+      正解 <span id="correct-num">0</span> / <span id="correct-all">10</span> 問
+    </p>
+    <p class="result__comment" id="result-comment"></p>
+
+    <div class="card__foot">
+      <button class="next next--ghost" id="btn-retry">もう一度挑戦する</button>
+    </div>
+  </section>
+</div>
+
+<canvas id="confetti" aria-hidden="true" hidden></canvas>
+
+<script>
+  // 問題を足すときは、このリストにオブジェクトを追加するだけ。
+  const QUIZ = [
+    {
+      text: "こどもNISAは2027年から開始予定",
+      answer: true,
+      commentary:
+        "子ども向けの新しい非課税投資制度「こどもNISA」は、<strong>2027年1月</strong>から開始される予定。" +
+        "年間投資枠は<strong>60万円</strong>まで、非課税保有限度額は合計<strong>600万円</strong>。" +
+        "対象年齢は<strong>0〜17歳</strong>で、原則12歳までは引き出せません。" +
+        "18歳になると通常のNISAへ自動的に移行されます。"
+    },
+    {
+      text: "年利6%で運用すると、お金が2倍になるまでにおよそ12年かかる",
+      answer: true,
+      commentary:
+        "「<strong>72の法則</strong>」といって、<strong>72 ÷ 金利(%) ≒ 2倍になる年数</strong>という目安があります。" +
+        "72 ÷ 6 = 12 で約12年。年利1%なら72年、年利3%なら24年です。" +
+        "利息が利息を生む<strong>複利</strong>の力は、時間が長いほど大きくなります。"
+    },
+    {
+      text: "クレジットカードのリボ払いは、毎月の支払額が一定なので手数料はかからない",
+      answer: false,
+      commentary:
+        "リボ払いは<strong>年15%前後の手数料（利息）</strong>がかかるのが一般的です。" +
+        "毎月の支払額が変わらないぶん残高が減りにくく、支払いが何年も続いて総額がふくらみます。" +
+        "毎月の請求額だけを見ていると、借金が増えていることに気づきにくいのが最大の落とし穴です。"
+    },
+    {
+      text: "18歳になれば、親の同意がなくてもローンやクレジットカードの契約ができる",
+      answer: true,
+      commentary:
+        "2022年4月から成年年齢が<strong>18歳</strong>に引き下げられ、一人で契約できるようになりました。" +
+        "同時に、未成年のうちだけ使えた「<strong>未成年者取消権</strong>」（親の同意なしの契約を後から取り消せる権利）が使えなくなります。" +
+        "18歳・19歳が悪質商法のターゲットにされやすいのはこのためです。"
+    },
+    {
+      text: "日本学生支援機構の奨学金は、すべて返済しなくてよいお金である",
+      answer: false,
+      commentary:
+        "奨学金には、返済不要の「<strong>給付型</strong>」と、返済が必要な「<strong>貸与型</strong>」があります。" +
+        "利用者が多いのは貸与型で、これは実質的に<strong>借金</strong>です。" +
+        "第一種は無利子、第二種は有利子。4年間借りれば数百万円になり、社会人になってから十数年かけて返します。"
+    },
+    {
+      text: "アルバイトで稼いだお金には、税金がかかることはない",
+      answer: false,
+      commentary:
+        "年収が一定額を超えると<strong>所得税</strong>がかかり、給料からあらかじめ天引き（源泉徴収）されます。" +
+        "学生でも同じです。また、稼ぎすぎると親の<strong>扶養から外れて</strong>家庭全体の税金が増えることもあります。" +
+        "※いくらから課税されるかの基準額は税制改正で変わるため、働く前に最新の金額を確認してください。"
+    },
+    {
+      text: "銀行がつぶれても、預金は1銀行につき元本1,000万円までしか保護されない",
+      answer: true,
+      commentary:
+        "「<strong>ペイオフ</strong>」という制度で、保護されるのは1つの金融機関につき預金者1人あたり" +
+        "<strong>元本1,000万円とその利息まで</strong>です。" +
+        "それを超える分は、破綻した銀行の財産の状況しだいで一部しか戻らないことがあります。" +
+        "（利息のつかない決済用預金は全額保護されます。）"
+    },
+    {
+      text: "「元本保証で年利20%」とうたう投資の勧誘は、法律違反の疑いが強い",
+      answer: true,
+      commentary:
+        "銀行などを除き、<strong>元本保証をうたってお金を集めることは出資法で禁止</strong>されています。" +
+        "投資は必ず値下がりの可能性があるので、「元本保証」と「高利回り」は本来<strong>両立しません</strong>。" +
+        "この2つがセットで出てきたら、まず詐欺を疑ってください。友人やSNS経由の勧誘ほど要注意です。"
+    },
+    {
+      text: "1ドル100円が1ドル150円になることを「円高」という",
+      answer: false,
+      commentary:
+        "これは「<strong>円安</strong>」です。1ドルを買うのに必要な円が100円→150円に増えた＝<strong>円の価値が下がった</strong>ということ。" +
+        "円安になると輸入品やガソリン、海外旅行の費用は高くなり、輸出企業や外貨建て資産にはプラスに働きます。" +
+        "数字が大きくなる＝円安、と覚えると混乱しません。"
+    },
+    {
+      text: "投資のリスクを下げるには、1つの会社の株に全額を集中させるのがよい",
+      answer: false,
+      commentary:
+        "逆です。1社に集中させると、その会社が傾いたとき資産のすべてを失いかねません。" +
+        "複数の会社・国・資産に分ける「<strong>分散投資</strong>」がリスクを下げる基本で、" +
+        "「<strong>卵は一つのカゴに盛るな</strong>」という格言で表されます。" +
+        "投資信託は、1本買うだけで何百社にも分散できる仕組みです。"
+    }
+  ];
+
+  const KANJI = ["一","二","三","四","五","六","七","八","九","十"];
+  const POINTS = 10;                        // 1問あたりの配点
+  const FULL   = QUIZ.length * POINTS;      // 満点
+
+  const el = {
+    qCard:    document.getElementById("card-question"),
+    aCard:    document.getElementById("card-answer"),
+    rCard:    document.getElementById("card-result"),
+    qNo:      document.getElementById("q-no"),
+    qText:    document.getElementById("q-text"),
+    maruBtn:  document.getElementById("btn-maru"),
+    batsuBtn: document.getElementById("btn-batsu"),
+    markMaru: document.getElementById("mark-maru"),
+    markBatsu:document.getElementById("mark-batsu"),
+    label:    document.getElementById("answer-label"),
+    comment:  document.getElementById("commentary"),
+    next:     document.getElementById("btn-next"),
+    retry:    document.getElementById("btn-retry"),
+    scoreNum: document.getElementById("score-num"),
+    scoreMax: document.getElementById("score-max"),
+    correctNum: document.getElementById("correct-num"),
+    correctAll: document.getElementById("correct-all"),
+    resultComment: document.getElementById("result-comment"),
+    countNow: document.getElementById("count-now"),
+    countAll: document.getElementById("count-all")
+  };
+
+  let index = 0;
+  let hits = 0;
+  let phase = "question";
+
+  el.countAll.textContent = QUIZ.length;
+  el.correctAll.textContent = QUIZ.length;
+  el.scoreMax.textContent = FULL;
+
+  function showQuestion() {
+    const q = QUIZ[index];
+    phase = "question";
+
+    el.qNo.textContent = "第 " + (KANJI[index] || index + 1) + " 問";
+    el.qText.textContent = q.text;
+    el.countNow.textContent = index + 1;
+
+    el.aCard.hidden = true;
+    el.rCard.hidden = true;
+    el.qCard.hidden = false;
+    replay(el.qCard);
+  }
+
+  function showAnswer(picked) {
+    const q = QUIZ[index];
+    const correct = picked === q.answer;
+    phase = "answer";
+
+    if (correct) hits += 1;
+
+    // SVG要素には .hidden プロパティが無いので、必ず属性で切り替える
+    el.markMaru.toggleAttribute("hidden", !q.answer);
+    el.markBatsu.toggleAttribute("hidden", q.answer);
+
+    el.label.textContent = correct ? "正解！" : "残念！不正解";
+    el.label.className = "answer-label " + (correct ? "answer-label--correct" : "answer-label--wrong");
+    el.comment.innerHTML = q.commentary;
+
+    el.next.textContent = index === QUIZ.length - 1 ? "結果は？" : "次の問題へ →";
+
+    el.qCard.hidden = true;
+    el.aCard.hidden = false;
+    replay(el.aCard);
+    redraw();
+    el.next.focus({ preventScroll: true });
+  }
+
+  function showResult() {
+    const score = hits * POINTS;
+    phase = "result";
+
+    el.scoreNum.textContent = score;
+    el.correctNum.textContent = hits;
+    el.resultComment.textContent = verdictFor(score / FULL);
+
+    el.qCard.hidden = true;
+    el.aCard.hidden = true;
+    el.rCard.hidden = false;
+    replay(el.rCard);
+    el.retry.focus({ preventScroll: true });
+
+    if (hits === QUIZ.length) celebrate();
+  }
+
+  /* ---------- 満点のクラッカー演出 ---------- */
+  const COLORS = ["#cf4437", "#2b4b96", "#a9822f", "#e8b64c", "#5a8ad6", "#f2f4f8"];
+  const canvas = document.getElementById("confetti");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let audioCtx = null;
+
+  function celebrate() {
+    pop(0);    // 左のクラッカー
+    pop(150);  // 右のクラッカー（Web Audio 側で発音時刻をずらす）
+    if (!reduceMotion.matches) burst();
+  }
+
+  // クラッカーの「パンッ」を Web Audio で合成する（音声ファイル不要）
+  function pop(delayMs) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+    } catch (e) { return; }
+
+    const t0 = audioCtx.currentTime + delayMs / 1000;
+
+    // 破裂音（ノイズを一気に減衰させる）
+    const len = Math.floor(audioCtx.sampleRate * 0.28);
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 7);
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buf;
+    const band = audioCtx.createBiquadFilter();
+    band.type = "bandpass";
+    band.frequency.value = 1600;
+    band.Q.value = 0.6;
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.value = 0.32;
+    noise.connect(band).connect(noiseGain).connect(audioCtx.destination);
+    noise.start(t0);
+
+    // 芯になる低音
+    const osc = audioCtx.createOscillator();
+    const oscGain = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(220, t0);
+    osc.frequency.exponentialRampToValueAtTime(55, t0 + 0.12);
+    oscGain.gain.setValueAtTime(0.3, t0);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16);
+    osc.connect(oscGain).connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.18);
+  }
+
+  // 左右のクラッカーから紙吹雪を打ち上げる
+  function burst() {
+    const ctx = canvas.getContext("2d");
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvas.hidden = false;
+
+    const bits = [];
+    function shoot(originX, originY, angle) {
+      for (let i = 0; i < 70; i++) {
+        const a = angle + (Math.random() - 0.5) * 0.8;
+        const speed = 13 + Math.random() * 15;
+        bits.push({
+          x: originX, y: originY,
+          vx: Math.cos(a) * speed,
+          vy: Math.sin(a) * speed,
+          w: 5 + Math.random() * 7,
+          h: 8 + Math.random() * 8,
+          spin: Math.random() * Math.PI * 2,
+          vs: (Math.random() - 0.5) * 0.4,
+          color: COLORS[(Math.random() * COLORS.length) | 0],
+          life: 1
+        });
+      }
+    }
+    shoot(w * 0.06, h * 0.94, -Math.PI / 3.1);
+    setTimeout(function () { shoot(w * 0.94, h * 0.94, -Math.PI + Math.PI / 3.1); }, 140);
+
+    let last = performance.now();
+    (function frame(now) {
+      const dt = Math.min((now - last) / 16.67, 2.5);
+      last = now;
+      ctx.clearRect(0, 0, w, h);
+
+      for (let i = bits.length - 1; i >= 0; i--) {
+        const b = bits[i];
+        b.vy += 0.42 * dt;
+        b.vx *= Math.pow(0.99, dt);
+        b.vy *= Math.pow(0.995, dt);
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+        b.spin += b.vs * dt;
+        if (b.y > h * 0.62) b.life -= 0.012 * dt;
+
+        if (b.life <= 0 || b.y > h + 60) { bits.splice(i, 1); continue; }
+
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.spin);
+        ctx.scale(Math.cos(b.spin * 1.7), 1); // ひらひら回転しているように見せる
+        ctx.globalAlpha = Math.max(b.life, 0);
+        ctx.fillStyle = b.color;
+        ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+        ctx.restore();
+      }
+
+      if (bits.length) {
+        requestAnimationFrame(frame);
+      } else {
+        ctx.clearRect(0, 0, w, h);
+        canvas.hidden = true;
+      }
+    })(last);
+  }
+
+  function verdictFor(rate) {
+    if (rate === 1)   return "満点。お金のきほんは完璧です。この知識、まわりの人にも教えてあげてください。";
+    if (rate >= 0.8)  return "かなり良い線です。まちがえた問題の解説だけ、もう一度読み返しておきましょう。";
+    if (rate >= 0.6)  return "基本はおさえています。あと少しだけ、社会に出る前に埋めておきたいところがあります。";
+    if (rate >= 0.4)  return "知らないままだと損をするテーマばかりです。今から覚えれば十分間に合います。";
+    return "いま気づけたのが収穫です。お金の知識は、学べば誰でも身につきます。もう一度挑戦してみましょう。";
+  }
+
+  // hidden から戻したカードに入場アニメーションを再生させる
+  function replay(node) {
+    node.classList.remove("enter");
+    void node.offsetWidth;
+    node.classList.add("enter");
+  }
+
+  // マル／バツのストロークを毎回書き直させる
+  function redraw() {
+    el.aCard.querySelectorAll(".mark :is(circle, line, path)").forEach(function (s) {
+      s.style.animation = "none";
+      void s.getBoundingClientRect();
+      s.style.animation = "";
+    });
+  }
+
+  el.maruBtn.addEventListener("click", function () { showAnswer(true); });
+  el.batsuBtn.addEventListener("click", function () { showAnswer(false); });
+
+  el.next.addEventListener("click", function () {
+    if (index < QUIZ.length - 1) {
+      index += 1;
+      showQuestion();
+    } else {
+      showResult();
+    }
+  });
+
+  el.retry.addEventListener("click", function () {
+    index = 0;
+    hits = 0;
+    showQuestion();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+
+    if (phase === "question") {
+      if (k === "arrowleft" || k === "o") { e.preventDefault(); showAnswer(true); }
+      if (k === "arrowright" || k === "x") { e.preventDefault(); showAnswer(false); }
+    }
+  });
+
+  showQuestion();
+</script>
+<script>
+/* PWA: GitHub Pages上でのみ有効（file:// や claude.ai では何もしない）。
+   sw.js はネット優先・オフライン時キャッシュなので、pushすれば次回起動時に自動で新版になる */
+if ('serviceWorker' in navigator && location.protocol === 'https:' && /\.github\.io$/.test(location.hostname)) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
+</html>
